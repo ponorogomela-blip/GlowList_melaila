@@ -5,6 +5,7 @@ import Produk from "./pages/Produk";
 import Kategori from "./pages/Kategori";
 import Tentang from "./pages/Tentang";
 import AddProduk from "./pages/AddProduk";
+import EditProduk from "./pages/EditProduk";
 
 export default function App() {
   return (
@@ -16,12 +17,9 @@ export default function App() {
           <Route path="kategori" element={<Kategori />} />
           <Route path="tentang" element={<Tentang />} />
           <Route path="produk/tambah" element={<AddProduk />} />
+          <Route path="produk/edit/:id" element={<EditProduk />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 }
-
-
-
-

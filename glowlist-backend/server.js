@@ -25,9 +25,27 @@ db.connect(err => {
 app.get('/', (req, res) => {
     res.send('Selamat Datang di GlowList API!!!!! ');
 });
+
 app.get('/produk', (req, res) => {
     const sql = 'SELECT * FROM produk';
+
     db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Gagal mengambil data produk:', err);
+            return res.status(500).json({
+                message: 'Gagal mengambil data produk',
+                error: err.sqlMessage
+            });
+        }
+
+        res.json(results);
+    });
+});
+
+app.get('/produk/:id_produk', (req, res) => {
+    const { id_produk } = req.params;
+    const sql = 'SELECT * FROM produk WHERE id_produk = ?';
+    db.query(sql, [id_produk], (err, results) => {
         if(err) return res.status(500).json({ error: err });
         res.json(results);
     });
