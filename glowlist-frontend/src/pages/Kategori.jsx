@@ -37,7 +37,7 @@ export default function Kategori(){
                     </tr>
                 </thead>
                 <tbody>
-                    {kategori.legth > 0 ? (
+                    {kategori.length > 0 ? (
                         kategori.map((item) => (
                             <tr key={item.id_kategori}>
                                 <td>{item.id_kategori}</td>

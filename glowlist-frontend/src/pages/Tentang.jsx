@@ -1,4 +1,4 @@
-export default function tentang() {
+export default function Tentang() {
     return <p>Nama : Melaila Putri Nanda Sabrina
         Kelas : XII RPL 2
         Saya suka sekali dengan skincare karena rutinitas ini memberikan waktu bagi diri sendiri (me time) untuk bersantai,
