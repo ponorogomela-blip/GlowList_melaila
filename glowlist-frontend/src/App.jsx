@@ -1,5 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Produk from "./pages/Produk";
 import Kategori from "./pages/Kategori";
@@ -11,7 +15,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Layout />} >
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Home />} />
           <Route path="produk" element={<Produk />} />
           <Route path="kategori" element={<Kategori />} />

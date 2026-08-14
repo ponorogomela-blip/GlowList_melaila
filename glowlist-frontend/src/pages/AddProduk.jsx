@@ -71,7 +71,6 @@ export default function AddProduk() {
                 onSubmit={handleSubmit}
                 className="card p-4 shadow-sm"
             >
-                {/* Judul Produk */}
                 <div className="mb-3">
                     <label className="form-label">
                         Judul Produk
@@ -88,7 +87,6 @@ export default function AddProduk() {
                     />
                 </div>
 
-                {/* Deskripsi */}
                 <div className="mb-3">
                     <label className="form-label">
                         Deskripsi
@@ -104,7 +102,6 @@ export default function AddProduk() {
                     ></textarea>
                 </div>
 
-                {/* Harga */}
                 <div className="mb-3">
                     <label className="form-label">
                         Harga
@@ -121,7 +118,6 @@ export default function AddProduk() {
                     />
                 </div>
 
-                {/* Kategori */}
                 <div className="mb-3">
                     <label className="form-label">
                         Kategori
@@ -149,7 +145,6 @@ export default function AddProduk() {
                     </select>
                 </div>
 
-                {/* Tombol Simpan */}
                 <button
                     type="submit"
                     className="btn btn-success"

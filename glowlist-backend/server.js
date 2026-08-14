@@ -181,7 +181,6 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/pengguna/me', authJWT, (req, res) => {
-    // Ambil ID dari berbagai kemungkinan nama variabel yang dipasang middleware
     const userId = req.userId || req.user?.id || req.user || req.id;
 
     const sql = 'SELECT id_pengguna, nama, email, no_hp FROM pengguna WHERE id_pengguna = ?';
