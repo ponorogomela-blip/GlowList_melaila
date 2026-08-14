@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const mysql = require('mysql2');
+const jwt = require('jsonwebtoken');
+
+const authJWT = require('./middleware');
 const PORT = 5000;
 
 app.use(cors());
@@ -13,14 +16,14 @@ const db = mysql.createConnection({
     password: '',
     database: 'glowlist_db_melaila'
 });
+
 db.connect(err => {
     if (err) {
         console.error('Gagal konek ke database:', err);
     } else {
-        console.log('Berhasil konek ke database GlowList')
+        console.log('Berhasil konek ke database GlowList');
     }
 });
-
 
 app.get('/', (req, res) => {
     res.send('Selamat Datang di GlowList API!!!!! ');
@@ -51,7 +54,7 @@ app.get('/produk/:id_produk', (req, res) => {
     });
 });
 
-app.post('/produk',(req, res) =>  {
+app.post('/produk', (req, res) => {
     const { judul, deskripsi, harga, id_kategori } = req.body;
 
     if (!judul || !harga || !deskripsi) {
@@ -68,14 +71,13 @@ app.post('/produk',(req, res) =>  {
     });
 });
 
-app.put('/produk/:id_produk', (req, res) => {
+app.put('/produk/:id_produk', authJWT, (req, res) => {
     const { id_produk } = req.params;
     const { judul, deskripsi, harga, id_kategori } = req.body;
 
     if (!judul || !harga) {
         return res.status(400).json({ message: 'judul, dan harga wajib diisi'});
     }
-    //console.log("dfasd");
     
     const sql= 'UPDATE produk SET judul=?, deskripsi=?, harga=?, id_kategori=? WHERE id_produk=?';
     db.query(sql, [judul, deskripsi, harga, id_kategori, id_produk], (err, result) => {
@@ -89,7 +91,7 @@ app.put('/produk/:id_produk', (req, res) => {
     });
 });
 
-app.delete('/produk/:id_produk', (req, res) => {
+app.delete('/produk/:id_produk', authJWT, (req, res) => {
     const { id_produk } = req.params;
     const sql = 'DELETE FROM produk WHERE id_produk = ?';
     db.query(sql, [id_produk], (err, result) => {
@@ -108,6 +110,90 @@ app.get('/kategori', (req, res) => {
     db.query(sql, (err, results) => {
         if(err) return res.status(500).json({ error: err });
         res.json(results);
+    });
+});
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
+app.post('/pengguna', async (req, res) => {
+    const { nama, email, password, no_hp } = req.body;
+
+    if (!nama || !email || !password) {
+        return res.status(400).json({ message: 'nama, email, dan password wajib diisi' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const sql = 'INSERT INTO pengguna (nama, email, password, no_hp) VALUES (?, ?, ?, ?)';
+        
+        db.query(sql, [nama, email, hashedPassword, no_hp], (err, result) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({
+                        message: 'Email sudah terdaftar, gunakan email lain'
+                    });
+                }
+
+                return res.status(500).json({ error: err.sqlMessage });
+            }
+
+            res.json({
+                message: 'Akun berhasil dibuat!',
+                id_pengguna: result.insertId
+            });
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Gagal mengenkripsi password'});
+    }
+});
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  const sql = 'SELECT * FROM pengguna WHERE email = ?';
+
+  db.query(sql, [email], (err, result) => {
+    if (err) return res.status(500).json({ error: err.sqlMessage });
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Akun tidak ditemukan' });
+    }
+
+    const user = result[0];
+    const passwordIsValid = bcrypt.compareSync(password, user.password);
+
+    if (!passwordIsValid) {
+      return res.status(401).json({ message: 'Password salah' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id_pengguna },
+      'glowlistrahasia',
+      { expiresIn: 86400 }
+    );
+
+    res.status(200).json({
+      auth: true,
+      token,
+      id_pengguna: user.id_pengguna,
+      nama: user.nama
+    });
+  });
+});
+
+app.get('/pengguna/me', authJWT, (req, res) => {
+    // Ambil ID dari berbagai kemungkinan nama variabel yang dipasang middleware
+    const userId = req.userId || req.user?.id || req.user || req.id;
+
+    const sql = 'SELECT id_pengguna, nama, email, no_hp FROM pengguna WHERE id_pengguna = ?';
+    
+    db.query(sql, [userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.sqlMessage });
+        
+        if (!result || result.length === 0) {
+            return res.status(404).json({ message: 'Pengguna tidak ditemukan' });
+        }
+
+        res.json(result[0]);
     });
 });
 
